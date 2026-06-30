@@ -127,10 +127,12 @@ async def upload_files(
             generation_tasks = []
 
             if generate_mindmap:
+                yield json.dumps({"step": "mind_map", "status": "active"}) + "\n"
                 t = asyncio.create_task(service.generate_mind_map(notebook_id))
                 generation_tasks.append(("mind_map", t))
 
             if generate_quiz:
+                yield json.dumps({"step": "quiz", "status": "active"}) + "\n"
                 t = asyncio.create_task(
                     service.generate_quiz(
                         notebook_id,
@@ -142,6 +144,7 @@ async def upload_files(
                 generation_tasks.append(("quiz", t))
 
             if generate_flashcards:
+                yield json.dumps({"step": "flashcards", "status": "active"}) + "\n"
                 t = asyncio.create_task(
                     service.generate_flashcards(
                         notebook_id,
@@ -152,12 +155,12 @@ async def upload_files(
                 )
                 generation_tasks.append(("flashcards", t))
 
-            yield json.dumps({"step": "generating", "status": "active"}) + "\n"
-
             if generation_tasks:
-                await asyncio.gather(*[t for _, t in generation_tasks])
-
-            yield json.dumps({"step": "generating", "status": "done"}) + "\n"
+                for coro in asyncio.as_completed([t for _, t in generation_tasks]):
+                    task = await coro
+                    for name, t in generation_tasks:
+                        if t.done() and not t.cancelled():
+                            yield json.dumps({"step": name, "status": "done"}) + "\n"
 
             notebook_url = await service.get_notebook_url(notebook_id)
 
@@ -196,3 +199,27 @@ async def list_notebooks():
         return {"notebooks": notebooks}
     except RPCError as e:
         raise HTTPException(status_code=502, detail=f"NotebookLM API error: {e}")
+
+
+@app.get("/auth-status")
+async def auth_status():
+    auth_json = os.environ.get("NOTEBOOKLM_AUTH_JSON")
+    if not auth_json:
+        return {"authenticated": False, "error": "No auth cookies configured"}
+    try:
+        data = json.loads(auth_json)
+        cookies = data.get("cookies", [])
+        earliest_expiry = None
+        for c in cookies:
+            exp = c.get("expires", -1)
+            if exp > 0:
+                if earliest_expiry is None or exp < earliest_expiry:
+                    earliest_expiry = exp
+        import time
+        now = time.time()
+        if earliest_expiry and earliest_expiry < now:
+            return {"authenticated": False, "error": "Cookies expired", "expired_at": int(earliest_expiry)}
+        remaining = int(earliest_expiry - now) if earliest_expiry else None
+        return {"authenticated": True, "expires_in": remaining, "cookie_count": len(cookies)}
+    except Exception:
+        return {"authenticated": False, "error": "Invalid auth format"}

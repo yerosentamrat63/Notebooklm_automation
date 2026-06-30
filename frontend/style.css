@@ -59,6 +59,43 @@ header h1 .light {
   margin-top: 4px;
 }
 
+.auth-banner {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.auth-error {
+  background: rgba(198, 40, 40, 0.15);
+  color: #f28b82;
+  border: 1px solid rgba(198, 40, 40, 0.3);
+}
+
+.auth-warn {
+  background: rgba(251, 188, 4, 0.12);
+  color: #fdd663;
+  border: 1px solid rgba(251, 188, 4, 0.25);
+}
+
+.description-card {
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.description-card p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.description-card strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
 .card {
   background: var(--card);
   border-radius: var(--radius);
@@ -136,6 +173,24 @@ header h1 .light {
   color: var(--text-secondary);
   font-size: 12px;
   flex-shrink: 0;
+}
+
+.file-remove {
+  background: none;
+  border: none;
+  color: #f28b82;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.file-remove:hover,
+.file-remove:active {
+  opacity: 1;
 }
 
 .field {

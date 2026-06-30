@@ -20,6 +20,12 @@
     </header>
 
     <main>
+      <div id="auth-banner" class="auth-banner hidden"></div>
+
+      <div class="card description-card">
+        <p>Upload your lecture notes, slides, or PDFs and let NotebookLM automatically create <strong>mind maps</strong>, <strong>quizzes</strong>, and <strong>flashcards</strong> for you. One upload, full study kit.</p>
+      </div>
+
       <div id="upload-area" class="card">
         <div class="upload-zone" id="drop-zone">
           <div class="upload-icon">
@@ -67,17 +73,17 @@
           <div class="pill-group">
             <div class="pill-group-label">Number of Questions</div>
             <div class="pill-row">
-              <button type="button" class="pill" data-group="quiz-quantity" data-value="fewer">Fewer</button>
-              <button type="button" class="pill active" data-group="quiz-quantity" data-value="standard">Standard (Default)</button>
-              <button type="button" class="pill" data-group="quiz-quantity" data-value="more">More</button>
+              <button type="button" class="pill" data-group="quiz-questions" data-value="10">10</button>
+              <button type="button" class="pill active" data-group="quiz-questions" data-value="25">25</button>
+              <button type="button" class="pill" data-group="quiz-questions" data-value="45">45</button>
             </div>
           </div>
           <div class="pill-group">
-            <div class="pill-group-label">Level of Difficulty</div>
+            <div class="pill-group-label">Difficulty</div>
             <div class="pill-row">
-              <button type="button" class="pill" data-group="quiz-difficulty" data-value="easy">Easy</button>
-              <button type="button" class="pill active" data-group="quiz-difficulty" data-value="medium">Medium (Default)</button>
-              <button type="button" class="pill" data-group="quiz-difficulty" data-value="hard">Hard</button>
+              <button type="button" class="pill" data-group="quiz-difficulty" data-value="Easy">Easy</button>
+              <button type="button" class="pill active" data-group="quiz-difficulty" data-value="Medium">Medium</button>
+              <button type="button" class="pill" data-group="quiz-difficulty" data-value="Hard">Hard</button>
             </div>
           </div>
           <div class="field" style="margin-top:12px">
@@ -99,17 +105,17 @@
           <div class="pill-group">
             <div class="pill-group-label">Number of Cards</div>
             <div class="pill-row">
-              <button type="button" class="pill" data-group="fc-quantity" data-value="fewer">Fewer</button>
-              <button type="button" class="pill active" data-group="fc-quantity" data-value="standard">Standard (Default)</button>
-              <button type="button" class="pill" data-group="fc-quantity" data-value="more">More</button>
+              <button type="button" class="pill" data-group="fc-questions" data-value="10">10</button>
+              <button type="button" class="pill active" data-group="fc-questions" data-value="25">25</button>
+              <button type="button" class="pill" data-group="fc-questions" data-value="45">45</button>
             </div>
           </div>
           <div class="pill-group">
-            <div class="pill-group-label">Level of Difficulty</div>
+            <div class="pill-group-label">Difficulty</div>
             <div class="pill-row">
-              <button type="button" class="pill" data-group="fc-difficulty" data-value="easy">Easy</button>
-              <button type="button" class="pill active" data-group="fc-difficulty" data-value="medium">Medium (Default)</button>
-              <button type="button" class="pill" data-group="fc-difficulty" data-value="hard">Hard</button>
+              <button type="button" class="pill" data-group="fc-difficulty" data-value="Easy">Easy</button>
+              <button type="button" class="pill active" data-group="fc-difficulty" data-value="Medium">Medium</button>
+              <button type="button" class="pill" data-group="fc-difficulty" data-value="Hard">Hard</button>
             </div>
           </div>
           <div class="field" style="margin-top:12px">
