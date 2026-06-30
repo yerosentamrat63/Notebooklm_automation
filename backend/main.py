@@ -99,7 +99,7 @@ async def upload_files(
         if ext not in SUPPORTED_EXTENSIONS:
             raise HTTPException(
                 status_code=400,
-                detail=f"Unsupported file type: {f.filename} (supported: PDF, DOCX, PPT, PPTX)",
+                detail=f"Unsupported file type: {f.filename} (supported: PDF, DOCX, PPTX — save old .ppt files as .pptx first)",
             )
 
     tmp_dir = tempfile.mkdtemp()

@@ -87,7 +87,7 @@
     const valid = [];
     for (const f of files) {
       const ext = '.' + f.name.split('.').pop().toLowerCase();
-      if (['.pdf', '.docx', '.ppt', '.pptx'].includes(ext)) {
+      if (['.pdf', '.docx', '.pptx'].includes(ext)) {
         if (!selectedFiles.find(sf => sf.name === f.name && sf.size === f.size)) {
           valid.push(f);
         }

@@ -4,12 +4,11 @@ from pathlib import Path
 from pptx import Presentation
 from fpdf import FPDF
 
-SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".pptx", ".ppt"}
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".pptx"}
 
 
 def needs_conversion(filename: str) -> bool:
-    ext = Path(filename).suffix.lower()
-    return ext in {".pptx", ".ppt"}
+    return False
 
 
 def get_converted_filename(original: str) -> str:
