@@ -209,8 +209,11 @@ async def auth_status():
     try:
         data = json.loads(auth_json)
         cookies = data.get("cookies", [])
+        critical_names = {"SID", "__Secure-1PSIDTS", "SAPISID", "APISID"}
         earliest_expiry = None
         for c in cookies:
+            if c.get("name") not in critical_names:
+                continue
             exp = c.get("expires", -1)
             if exp > 0:
                 if earliest_expiry is None or exp < earliest_expiry:
