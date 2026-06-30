@@ -29,6 +29,8 @@
     'fc-difficulty': 'medium',
   };
 
+  const SUPPORTED = ['.pdf', '.docx', '.pptx'];
+
   document.addEventListener('click', (e) => {
     const pill = e.target.closest('.pill');
     if (!pill) return;
@@ -52,6 +54,24 @@
     return '📁';
   }
 
+  function getExtension(name) {
+    return '.' + name.split('.').pop().toLowerCase();
+  }
+
+  function showToast(msg) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'toast';
+      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#c62828;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;max-width:90%;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.4);';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => { toast.style.display = 'none'; }, 3500);
+  }
+
   function updateFileList() {
     fileList.innerHTML = '';
     if (selectedFiles.length === 0) {
@@ -61,7 +81,7 @@
     }
     fileList.classList.remove('hidden');
     const ul = document.createElement('div');
-    selectedFiles.forEach((f, i) => {
+    selectedFiles.forEach((f) => {
       const item = document.createElement('div');
       item.className = 'file-item';
       item.innerHTML = `
@@ -85,13 +105,19 @@
 
   function handleFiles(files) {
     const valid = [];
+    const rejected = [];
     for (const f of files) {
-      const ext = '.' + f.name.split('.').pop().toLowerCase();
-      if (['.pdf', '.docx', '.pptx'].includes(ext)) {
+      const ext = getExtension(f.name);
+      if (SUPPORTED.includes(ext)) {
         if (!selectedFiles.find(sf => sf.name === f.name && sf.size === f.size)) {
           valid.push(f);
         }
+      } else {
+        rejected.push(f.name);
       }
+    }
+    if (rejected.length > 0) {
+      showToast('Unsupported: ' + rejected.join(', ') + ' (use PDF, DOCX, or PPTX)');
     }
     if (valid.length === 0) return;
     selectedFiles = selectedFiles.concat(valid);
@@ -130,25 +156,35 @@
 
   notebookName.addEventListener('input', updateSubmitBtn);
 
-  function setProgress(step, detail) {
-    progressPanel.classList.remove('hidden');
-    configPanel.classList.add('hidden');
-    resultPanel.classList.add('hidden');
-    progressStatus.textContent = step;
-    progressDetail.textContent = detail || '';
+  function buildProgressSteps() {
+    const hasGen = genMindmap.checked || genQuiz.checked || genFlashcards.checked;
+    const steps = [
+      { id: 'notebook', text: 'Creating notebook', icon: '⬜' },
+      { id: 'sources', text: 'Uploading sources', icon: '⬜' },
+    ];
+    if (hasGen) {
+      steps.push({ id: 'generating', text: 'Generating content', icon: '⬜' });
+    }
+    steps.push({ id: 'done', text: 'Done!', icon: '⬜' });
+    return steps;
   }
 
-  function updateProgressSteps(steps) {
+  function renderSteps(steps) {
     progressSteps.innerHTML = '';
     steps.forEach(s => {
       const div = document.createElement('div');
-      div.className = 'progress-step ' + (s.status || '');
-      div.innerHTML = `
-        <span class="step-icon">${s.icon}</span>
-        <span>${s.text}</span>
-      `;
+      div.className = 'progress-step' + (s.status ? ' ' + s.status : '');
+      div.innerHTML = `<span class="step-icon">${s.icon}</span><span>${s.text}</span>`;
       progressSteps.appendChild(div);
     });
+  }
+
+  function setStep(steps, stepId, status) {
+    const step = steps.find(s => s.id === stepId);
+    if (!step) return;
+    step.status = status;
+    step.icon = status === 'done' ? '✅' : status === 'active' ? '⏳' : status === 'error' ? '❌' : '⬜';
+    renderSteps(steps);
   }
 
   submitBtn.addEventListener('click', async () => {
@@ -158,13 +194,13 @@
     const quizInstructions = document.getElementById('quiz-instructions').value.trim();
     const fcInstructions = document.getElementById('fc-instructions').value.trim();
 
-    setProgress('Creating notebook...', 'Uploading files to NotebookLM');
-    updateProgressSteps([
-      { text: 'Creating notebook', icon: '⬜', status: 'active' },
-      { text: 'Uploading sources', icon: '⬜' },
-      { text: 'Generating content', icon: '⬜' },
-      { text: 'Done!', icon: '⬜' },
-    ]);
+    const steps = buildProgressSteps();
+    progressPanel.classList.remove('hidden');
+    configPanel.classList.add('hidden');
+    resultPanel.classList.add('hidden');
+    progressStatus.textContent = 'Starting...';
+    progressDetail.textContent = '';
+    renderSteps(steps);
 
     const formData = new FormData();
     for (const f of selectedFiles) {
@@ -182,46 +218,60 @@
     formData.append('flashcards_instructions', fcInstructions);
 
     try {
-      const res = await fetch('/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      updateProgressSteps([
-        { text: 'Creating notebook', icon: '✅', status: 'done' },
-        { text: 'Uploading sources', icon: '✅', status: 'done' },
-        { text: 'Generating content', icon: '⏳', status: 'active' },
-        { text: 'Done!', icon: '⬜' },
-      ]);
-
-      setProgress('Generating content...', 'This may take a minute');
+      const res = await fetch('/upload', { method: 'POST', body: formData });
 
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail || 'Upload failed');
       }
 
-      const data = await res.json();
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-      updateProgressSteps([
-        { text: 'Creating notebook', icon: '✅', status: 'done' },
-        { text: 'Uploading sources', icon: '✅', status: 'done' },
-        { text: 'Generating content', icon: '✅', status: 'done' },
-        { text: 'Done!', icon: '✅', status: 'done' },
-      ]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
 
-      const generated = [];
-      if (data.generated.mind_map) generated.push('Mind Map');
-      if (data.generated.quiz) generated.push('Quiz');
-      if (data.generated.flashcards) generated.push('Flashcards');
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const event = JSON.parse(line);
 
-      progressPanel.classList.add('hidden');
-      resultPanel.classList.remove('hidden');
-      resultText.textContent = `"${data.notebook_name}" created with ${generated.join(', ')}. Open it in NotebookLM to view.`;
-      notebookLink.href = data.notebook_url;
+          if (event.step === 'notebook' && event.status === 'done') {
+            setStep(steps, 'notebook', 'done');
+            setStep(steps, 'sources', 'active');
+            progressStatus.textContent = 'Uploading sources...';
+          } else if (event.step === 'sources' && event.status === 'done') {
+            setStep(steps, 'sources', 'done');
+            setStep(steps, 'generating', 'active');
+            progressStatus.textContent = 'Generating content...';
+            progressDetail.textContent = 'This may take a minute';
+          } else if (event.step === 'generating' && event.status === 'done') {
+            setStep(steps, 'generating', 'done');
+            setStep(steps, 'done', 'done');
+          } else if (event.step === 'done') {
+            progressPanel.classList.add('hidden');
+            resultPanel.classList.remove('hidden');
+            const r = event.result;
+            const generated = [];
+            if (r.generated.mind_map) generated.push('Mind Map');
+            if (r.generated.quiz) generated.push('Quiz');
+            if (r.generated.flashcards) generated.push('Flashcards');
+            resultText.textContent = `"${r.notebook_name}" created with ${generated.join(', ')}. Open it in NotebookLM to view.`;
+            notebookLink.href = r.notebook_url;
+          } else if (event.step === 'error') {
+            setStep(steps, 'generating', 'error');
+            throw new Error(event.detail);
+          }
+        }
+      }
 
     } catch (err) {
-      setProgress('Error', err.message);
+      progressStatus.textContent = 'Error';
+      progressDetail.textContent = err.message;
       setTimeout(() => {
         progressPanel.classList.add('hidden');
         configPanel.classList.remove('hidden');

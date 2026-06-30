@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from notebooklm import NotebookLMClient
@@ -99,76 +99,85 @@ async def upload_files(
         if ext not in SUPPORTED_EXTENSIONS:
             raise HTTPException(
                 status_code=400,
-                detail=f"Unsupported file type: {f.filename} (supported: PDF, DOCX, PPTX — save old .ppt files as .pptx first)",
+                detail=f"Unsupported file type: {f.filename} (supported: PDF, DOCX, PPTX)",
             )
 
     tmp_dir = tempfile.mkdtemp()
-    try:
-        tmp_paths = []
-        for uploaded_file in files:
-            tmp_path = os.path.join(tmp_dir, uploaded_file.filename)
-            content = await uploaded_file.read()
-            with open(tmp_path, "wb") as f:
-                f.write(content)
-            tmp_paths.append(tmp_path)
 
-        notebook_id = await service.create_notebook(notebook_name)
+    async def event_stream():
+        try:
+            tmp_paths = []
+            for uploaded_file in files:
+                tmp_path = os.path.join(tmp_dir, uploaded_file.filename)
+                content = await uploaded_file.read()
+                with open(tmp_path, "wb") as f:
+                    f.write(content)
+                tmp_paths.append(tmp_path)
 
-        await service.add_file_sources(notebook_id, tmp_paths)
+            notebook_id = await service.create_notebook(notebook_name)
+            yield json.dumps({"step": "notebook", "status": "done"}) + "\n"
 
-        generation_tasks = []
+            await service.add_file_sources(notebook_id, tmp_paths)
+            yield json.dumps({"step": "sources", "status": "done"}) + "\n"
 
-        if generate_mindmap:
-            t = asyncio.create_task(
-                service.generate_mind_map(notebook_id)
-            )
-            generation_tasks.append(("mind_map", t))
+            generation_tasks = []
 
-        if generate_quiz:
-            t = asyncio.create_task(
-                service.generate_quiz(
-                    notebook_id,
-                    difficulty=quiz_difficulty,
-                    quantity=quiz_quantity,
-                    instructions=quiz_instructions or None,
+            if generate_mindmap:
+                t = asyncio.create_task(service.generate_mind_map(notebook_id))
+                generation_tasks.append(("mind_map", t))
+
+            if generate_quiz:
+                t = asyncio.create_task(
+                    service.generate_quiz(
+                        notebook_id,
+                        difficulty=quiz_difficulty,
+                        quantity=quiz_quantity,
+                        instructions=quiz_instructions or None,
+                    )
                 )
-            )
-            generation_tasks.append(("quiz", t))
+                generation_tasks.append(("quiz", t))
 
-        if generate_flashcards:
-            t = asyncio.create_task(
-                service.generate_flashcards(
-                    notebook_id,
-                    difficulty=flashcards_difficulty,
-                    quantity=flashcards_quantity,
-                    instructions=flashcards_instructions or None,
+            if generate_flashcards:
+                t = asyncio.create_task(
+                    service.generate_flashcards(
+                        notebook_id,
+                        difficulty=flashcards_difficulty,
+                        quantity=flashcards_quantity,
+                        instructions=flashcards_instructions or None,
+                    )
                 )
-            )
-            generation_tasks.append(("flashcards", t))
+                generation_tasks.append(("flashcards", t))
 
-        if generation_tasks:
-            await asyncio.gather(*[t for _, t in generation_tasks])
+            yield json.dumps({"step": "generating", "status": "active"}) + "\n"
 
-        notebook_url = await service.get_notebook_url(notebook_id)
+            if generation_tasks:
+                await asyncio.gather(*[t for _, t in generation_tasks])
 
-        return {
-            "success": True,
-            "notebook_id": notebook_id,
-            "notebook_url": notebook_url,
-            "notebook_name": notebook_name,
-            "generated": {
-                "mind_map": generate_mindmap,
-                "quiz": generate_quiz,
-                "flashcards": generate_flashcards,
-            },
-        }
+            yield json.dumps({"step": "generating", "status": "done"}) + "\n"
 
-    except RPCError as e:
-        raise HTTPException(status_code=502, detail=f"NotebookLM API error: {e}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
+            notebook_url = await service.get_notebook_url(notebook_id)
+
+            result = {
+                "success": True,
+                "notebook_id": notebook_id,
+                "notebook_url": notebook_url,
+                "notebook_name": notebook_name,
+                "generated": {
+                    "mind_map": generate_mindmap,
+                    "quiz": generate_quiz,
+                    "flashcards": generate_flashcards,
+                },
+            }
+            yield json.dumps({"step": "done", "result": result}) + "\n"
+
+        except RPCError as e:
+            yield json.dumps({"step": "error", "detail": f"NotebookLM API error: {e}"}) + "\n"
+        except Exception as e:
+            yield json.dumps({"step": "error", "detail": str(e)}) + "\n"
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @app.get("/notebooks")
