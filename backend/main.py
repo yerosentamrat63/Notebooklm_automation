@@ -104,12 +104,16 @@ async def upload_files(
 
     tmp_dir = tempfile.mkdtemp()
 
+    file_contents = []
+    for uploaded_file in files:
+        content = await uploaded_file.read()
+        file_contents.append((uploaded_file.filename, content))
+
     async def event_stream():
         try:
             tmp_paths = []
-            for uploaded_file in files:
-                tmp_path = os.path.join(tmp_dir, uploaded_file.filename)
-                content = await uploaded_file.read()
+            for filename, content in file_contents:
+                tmp_path = os.path.join(tmp_dir, filename)
                 with open(tmp_path, "wb") as f:
                     f.write(content)
                 tmp_paths.append(tmp_path)
