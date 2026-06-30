@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#1a73e8">
+  <meta name="theme-color" content="#1a1a2e">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/manifest.json">
@@ -16,14 +16,14 @@
   <div id="app">
     <header>
       <h1>NotebookLM <span class="light">Auto-Pilot</span></h1>
-      <p class="subtitle">Upload files → NotebookLM generates study materials</p>
+      <p class="subtitle">Upload files &rarr; NotebookLM generates study materials</p>
     </header>
 
     <main>
       <div id="upload-area" class="card">
         <div class="upload-zone" id="drop-zone">
           <div class="upload-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8ab4f8" stroke-width="1.5">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="17 8 12 3 7 8"/>
               <line x1="12" y1="3" x2="12" y2="15"/>
@@ -57,28 +57,32 @@
         <label class="option-row">
           <span class="option-label">
             <span class="option-name">Quiz</span>
-            <span class="option-desc">Hard, ~35 questions</span>
+            <span class="option-desc">Test your knowledge</span>
           </span>
           <input type="checkbox" id="gen-quiz" checked class="toggle">
           <span class="toggle-slider"></span>
         </label>
 
         <div id="quiz-options" class="nested-options">
-          <div class="field">
-            <label for="quiz-difficulty">Difficulty</label>
-            <select id="quiz-difficulty" class="input">
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard" selected>Hard</option>
-            </select>
+          <div class="pill-group">
+            <div class="pill-group-label">Number of Questions</div>
+            <div class="pill-row">
+              <button type="button" class="pill" data-group="quiz-quantity" data-value="fewer">Fewer</button>
+              <button type="button" class="pill active" data-group="quiz-quantity" data-value="standard">Standard (Default)</button>
+              <button type="button" class="pill" data-group="quiz-quantity" data-value="more">More</button>
+            </div>
           </div>
-          <div class="field">
-            <label for="quiz-quantity">Questions</label>
-            <select id="quiz-quantity" class="input">
-              <option value="fewer">Fewer (~15)</option>
-              <option value="standard" selected>Standard (~25)</option>
-              <option value="more">More (~35)</option>
-            </select>
+          <div class="pill-group">
+            <div class="pill-group-label">Level of Difficulty</div>
+            <div class="pill-row">
+              <button type="button" class="pill" data-group="quiz-difficulty" data-value="easy">Easy</button>
+              <button type="button" class="pill active" data-group="quiz-difficulty" data-value="medium">Medium (Default)</button>
+              <button type="button" class="pill" data-group="quiz-difficulty" data-value="hard">Hard</button>
+            </div>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label for="quiz-instructions">What should the topic be?</label>
+            <textarea id="quiz-instructions" class="input textarea" rows="3" placeholder="e.g. Focus on key concepts from chapters 1-3"></textarea>
           </div>
         </div>
 
@@ -92,21 +96,25 @@
         </label>
 
         <div id="flashcard-options" class="nested-options hidden">
-          <div class="field">
-            <label for="flashcard-difficulty">Difficulty</label>
-            <select id="flashcard-difficulty" class="input">
-              <option value="easy">Easy</option>
-              <option value="medium" selected>Medium</option>
-              <option value="hard">Hard</option>
-            </select>
+          <div class="pill-group">
+            <div class="pill-group-label">Number of Cards</div>
+            <div class="pill-row">
+              <button type="button" class="pill" data-group="fc-quantity" data-value="fewer">Fewer</button>
+              <button type="button" class="pill active" data-group="fc-quantity" data-value="standard">Standard (Default)</button>
+              <button type="button" class="pill" data-group="fc-quantity" data-value="more">More</button>
+            </div>
           </div>
-          <div class="field">
-            <label for="flashcard-quantity">Quantity</label>
-            <select id="flashcard-quantity" class="input">
-              <option value="fewer">Fewer</option>
-              <option value="standard" selected>Standard</option>
-              <option value="more">More</option>
-            </select>
+          <div class="pill-group">
+            <div class="pill-group-label">Level of Difficulty</div>
+            <div class="pill-row">
+              <button type="button" class="pill" data-group="fc-difficulty" data-value="easy">Easy</button>
+              <button type="button" class="pill active" data-group="fc-difficulty" data-value="medium">Medium (Default)</button>
+              <button type="button" class="pill" data-group="fc-difficulty" data-value="hard">Hard</button>
+            </div>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label for="fc-instructions">What should the topic be?</label>
+            <textarea id="fc-instructions" class="input textarea" rows="3" placeholder="e.g. Focus on key terms and definitions"></textarea>
           </div>
         </div>
 
@@ -124,7 +132,7 @@
 
       <div id="result-panel" class="card hidden">
         <div class="success-icon">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="#34a853">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="#81c995">
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
           </svg>
         </div>

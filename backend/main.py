@@ -76,11 +76,13 @@ async def upload_files(
     notebook_name: str = Form(...),
     generate_mindmap: bool = Form(False),
     generate_quiz: bool = Form(False),
-    quiz_difficulty: str = Form("hard"),
-    quiz_quantity: str = Form("more"),
+    quiz_difficulty: str = Form("medium"),
+    quiz_quantity: str = Form("standard"),
+    quiz_instructions: str = Form(""),
     generate_flashcards: bool = Form(False),
     flashcards_difficulty: str = Form("medium"),
     flashcards_quantity: str = Form("standard"),
+    flashcards_instructions: str = Form(""),
 ):
     service: NotebookService | None = getattr(app.state, "service", None)
     if not service:
@@ -133,6 +135,7 @@ async def upload_files(
                     notebook_id,
                     difficulty=quiz_difficulty,
                     quantity=quiz_quantity,
+                    instructions=quiz_instructions or None,
                 )
             )
             generation_tasks.append(("quiz", t))
@@ -143,6 +146,7 @@ async def upload_files(
                     notebook_id,
                     difficulty=flashcards_difficulty,
                     quantity=flashcards_quantity,
+                    instructions=flashcards_instructions or None,
                 )
             )
             generation_tasks.append(("flashcards", t))

@@ -11,10 +11,6 @@
   const genFlashcards = document.getElementById('gen-flashcards');
   const quizOptions = document.getElementById('quiz-options');
   const flashcardOptions = document.getElementById('flashcard-options');
-  const quizDifficulty = document.getElementById('quiz-difficulty');
-  const quizQuantity = document.getElementById('quiz-quantity');
-  const flashcardDifficulty = document.getElementById('flashcard-difficulty');
-  const flashcardQuantity = document.getElementById('flashcard-quantity');
   const submitBtn = document.getElementById('submit-btn');
   const progressPanel = document.getElementById('progress-panel');
   const progressStatus = document.getElementById('progress-status');
@@ -26,6 +22,21 @@
   const newBtn = document.getElementById('new-btn');
 
   let selectedFiles = [];
+  const pillValues = {
+    'quiz-quantity': 'standard',
+    'quiz-difficulty': 'medium',
+    'fc-quantity': 'standard',
+    'fc-difficulty': 'medium',
+  };
+
+  document.addEventListener('click', (e) => {
+    const pill = e.target.closest('.pill');
+    if (!pill) return;
+    const group = pill.dataset.group;
+    pill.parentElement.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    pillValues[group] = pill.dataset.value;
+  });
 
   function formatSize(bytes) {
     if (bytes < 1024) return bytes + ' B';
@@ -144,6 +155,8 @@
     if (selectedFiles.length === 0) return;
 
     const name = notebookName.value.trim() || 'Study Notebook';
+    const quizInstructions = document.getElementById('quiz-instructions').value.trim();
+    const fcInstructions = document.getElementById('fc-instructions').value.trim();
 
     setProgress('Creating notebook...', 'Uploading files to NotebookLM');
     updateProgressSteps([
@@ -160,11 +173,13 @@
     formData.append('notebook_name', name);
     formData.append('generate_mindmap', genMindmap.checked ? 'true' : 'false');
     formData.append('generate_quiz', genQuiz.checked ? 'true' : 'false');
-    formData.append('quiz_difficulty', quizDifficulty.value);
-    formData.append('quiz_quantity', quizQuantity.value);
+    formData.append('quiz_difficulty', pillValues['quiz-difficulty']);
+    formData.append('quiz_quantity', pillValues['quiz-quantity']);
+    formData.append('quiz_instructions', quizInstructions);
     formData.append('generate_flashcards', genFlashcards.checked ? 'true' : 'false');
-    formData.append('flashcards_difficulty', flashcardDifficulty.value);
-    formData.append('flashcards_quantity', flashcardQuantity.value);
+    formData.append('flashcards_difficulty', pillValues['fc-difficulty']);
+    formData.append('flashcards_quantity', pillValues['fc-quantity']);
+    formData.append('flashcards_instructions', fcInstructions);
 
     try {
       const res = await fetch('/upload', {
@@ -225,6 +240,19 @@
     quizOptions.classList.remove('hidden');
     flashcardOptions.classList.add('hidden');
     notebookName.value = '';
+    document.getElementById('quiz-instructions').value = '';
+    document.getElementById('fc-instructions').value = '';
+    pillValues['quiz-quantity'] = 'standard';
+    pillValues['quiz-difficulty'] = 'medium';
+    pillValues['fc-quantity'] = 'standard';
+    pillValues['fc-difficulty'] = 'medium';
+    document.querySelectorAll('.pill').forEach(p => {
+      if (p.dataset.value === 'standard' || p.dataset.value === 'medium') {
+        p.classList.add('active');
+      } else {
+        p.classList.remove('active');
+      }
+    });
     updateSubmitBtn();
   });
 

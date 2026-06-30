@@ -42,11 +42,11 @@ class NotebookService:
     async def generate_quiz(
         self,
         notebook_id: str,
-        difficulty: str = "hard",
-        quantity: str = "more",
+        difficulty: str = "medium",
+        quantity: str = "standard",
         instructions: Optional[str] = None,
     ) -> str:
-        diff = DIFFICULTY_MAP.get(difficulty, QuizDifficulty.HARD)
+        diff = DIFFICULTY_MAP.get(difficulty, QuizDifficulty.MEDIUM)
         qty = QUANTITY_MAP.get(quantity, QuizQuantity.STANDARD)
         kwargs = {"difficulty": diff, "quantity": qty}
         if instructions:
