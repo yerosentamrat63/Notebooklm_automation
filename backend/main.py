@@ -14,7 +14,7 @@ from notebooklm import NotebookLMClient
 from notebooklm import RPCError
 
 from .notebook_service import NotebookService
-from .file_converter import needs_conversion, convert_pptx_to_pdf, SUPPORTED_EXTENSIONS
+from .file_converter import SUPPORTED_EXTENSIONS
 
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
@@ -104,22 +104,17 @@ async def upload_files(
 
     tmp_dir = tempfile.mkdtemp()
     try:
-        processed_paths = []
+        tmp_paths = []
         for uploaded_file in files:
             tmp_path = os.path.join(tmp_dir, uploaded_file.filename)
             content = await uploaded_file.read()
             with open(tmp_path, "wb") as f:
                 f.write(content)
-
-            if needs_conversion(uploaded_file.filename):
-                converted = await convert_pptx_to_pdf(tmp_path, tmp_dir)
-                processed_paths.append(converted)
-            else:
-                processed_paths.append(tmp_path)
+            tmp_paths.append(tmp_path)
 
         notebook_id = await service.create_notebook(notebook_name)
 
-        await service.add_file_sources(notebook_id, processed_paths)
+        await service.add_file_sources(notebook_id, tmp_paths)
 
         generation_tasks = []
 
