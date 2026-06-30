@@ -476,6 +476,17 @@ textarea.input {
   text-decoration: none;
 }
 
+.meme-container {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.meme-img {
+  max-width: 200px;
+  border-radius: 12px;
+  opacity: 0.85;
+}
+
 @media (display-mode: standalone) {
   header {
     padding-top: 48px;
