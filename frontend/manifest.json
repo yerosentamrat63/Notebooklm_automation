@@ -4,8 +4,8 @@
   "description": "Upload files and auto-generate NotebookLM study materials",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f0f4f9",
-  "theme_color": "#1a73e8",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
   "orientation": "portrait",
   "scope": "/",
   "icons": [
