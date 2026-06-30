@@ -1,0 +1,25 @@
+{
+  "name": "NotebookLM Auto-Pilot",
+  "short_name": "NBLM Pilot",
+  "description": "Upload files and auto-generate NotebookLM study materials",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f4f9",
+  "theme_color": "#1a73e8",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

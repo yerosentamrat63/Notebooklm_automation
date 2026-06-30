@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <title>NotebookLM Auto-Pilot</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>NotebookLM <span class="light">Auto-Pilot</span></h1>
+      <p class="subtitle">Upload files → NotebookLM generates study materials</p>
+    </header>
+
+    <main>
+      <div id="upload-area" class="card">
+        <div class="upload-zone" id="drop-zone">
+          <div class="upload-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <p class="upload-text">Tap to select files</p>
+          <p class="upload-hint">PDF, DOCX, PPT, PPTX</p>
+          <input type="file" id="file-input" accept=".pdf,.docx,.ppt,.pptx" multiple hidden>
+        </div>
+
+        <div id="file-list" class="file-list hidden"></div>
+      </div>
+
+      <div id="config-panel" class="card hidden">
+        <div class="field">
+          <label for="notebook-name">Notebook name</label>
+          <input type="text" id="notebook-name" placeholder="My Study Notebook" class="input">
+        </div>
+
+        <div class="section-title">What to generate</div>
+
+        <label class="option-row">
+          <span class="option-label">
+            <span class="option-name">Mind Map</span>
+            <span class="option-desc">Visual concept diagram</span>
+          </span>
+          <input type="checkbox" id="gen-mindmap" checked class="toggle">
+          <span class="toggle-slider"></span>
+        </label>
+
+        <label class="option-row">
+          <span class="option-label">
+            <span class="option-name">Quiz</span>
+            <span class="option-desc">Hard, ~35 questions</span>
+          </span>
+          <input type="checkbox" id="gen-quiz" checked class="toggle">
+          <span class="toggle-slider"></span>
+        </label>
+
+        <div id="quiz-options" class="nested-options">
+          <div class="field">
+            <label for="quiz-difficulty">Difficulty</label>
+            <select id="quiz-difficulty" class="input">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard" selected>Hard</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="quiz-quantity">Questions</label>
+            <select id="quiz-quantity" class="input">
+              <option value="fewer">Fewer (~15)</option>
+              <option value="standard" selected>Standard (~25)</option>
+              <option value="more">More (~35)</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="option-row">
+          <span class="option-label">
+            <span class="option-name">Flashcards</span>
+            <span class="option-desc">Study cards</span>
+          </span>
+          <input type="checkbox" id="gen-flashcards" class="toggle">
+          <span class="toggle-slider"></span>
+        </label>
+
+        <div id="flashcard-options" class="nested-options hidden">
+          <div class="field">
+            <label for="flashcard-difficulty">Difficulty</label>
+            <select id="flashcard-difficulty" class="input">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="flashcard-quantity">Quantity</label>
+            <select id="flashcard-quantity" class="input">
+              <option value="fewer">Fewer</option>
+              <option value="standard" selected>Standard</option>
+              <option value="more">More</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="submit-btn" class="btn" disabled>
+          Create Notebook
+        </button>
+      </div>
+
+      <div id="progress-panel" class="card hidden">
+        <div class="spinner"></div>
+        <div id="progress-status">Creating notebook...</div>
+        <div id="progress-detail" class="progress-detail"></div>
+        <div class="progress-steps" id="progress-steps"></div>
+      </div>
+
+      <div id="result-panel" class="card hidden">
+        <div class="success-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="#34a853">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+          </svg>
+        </div>
+        <h2>Done!</h2>
+        <p id="result-text" class="result-text"></p>
+        <a id="notebook-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">
+          Open in NotebookLM
+        </a>
+        <button id="new-btn" class="btn btn-secondary">Create Another</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
