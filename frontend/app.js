@@ -229,23 +229,15 @@
   }
 
   function buildQuizInstructions() {
-    const parts = [];
     const q = pillValues['quiz-questions'];
     const d = pillValues['quiz-difficulty'];
-    parts.push('Create a quiz with ' + q + ' questions at ' + d + ' difficulty level.');
-    const user = document.getElementById('quiz-instructions').value.trim();
-    if (user) parts.push(user);
-    return parts.join(' ');
+    return 'Create a quiz with ' + q + ' questions at ' + d + ' difficulty level.';
   }
 
   function buildFlashcardInstructions() {
-    const parts = [];
     const q = pillValues['fc-questions'];
     const d = pillValues['fc-difficulty'];
-    parts.push('Create ' + q + ' flashcards at ' + d + ' difficulty level.');
-    const user = document.getElementById('fc-instructions').value.trim();
-    if (user) parts.push(user);
-    return parts.join(' ');
+    return 'Create ' + q + ' flashcards at ' + d + ' difficulty level.';
   }
 
   submitBtn.addEventListener('click', async () => {
